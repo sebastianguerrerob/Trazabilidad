@@ -25,6 +25,7 @@ public class TrazabilidadEntity {
     private String estadoNuevo;
     private Long idEmpleado;
     private String correoEmpleado;
+    private Long idRestaurante;
 
     @DynamoDbPartitionKey
     public String getId() {
@@ -39,5 +40,10 @@ public class TrazabilidadEntity {
     @DynamoDbSecondarySortKey(indexNames = "pedido-fecha-index")
     public String getFecha() {
         return fecha;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "restaurante-index")
+    public Long getIdRestaurante() {
+        return idRestaurante;
     }
 }

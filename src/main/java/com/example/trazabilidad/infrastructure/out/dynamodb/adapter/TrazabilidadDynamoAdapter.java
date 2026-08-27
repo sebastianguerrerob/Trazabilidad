@@ -46,6 +46,7 @@ public class TrazabilidadDynamoAdapter implements ITrazabilidadPersistencePort {
         entity.setEstadoNuevo(trazabilidad.getEstadoNuevo());
         entity.setIdEmpleado(trazabilidad.getIdEmpleado());
         entity.setCorreoEmpleado(trazabilidad.getCorreoEmpleado());
+        entity.setIdRestaurante(trazabilidad.getIdRestaurante());
 
         table.putItem(entity);
     }
@@ -55,6 +56,18 @@ public class TrazabilidadDynamoAdapter implements ITrazabilidadPersistencePort {
         DynamoDbIndex<TrazabilidadEntity> index = table.index("pedido-fecha-index");
 
         QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue(idPedido));
+
+        return index.query(queryConditional).stream()
+                .flatMap(page -> page.items().stream())
+                .map(this::toModel)
+                .toList();
+    }
+
+    @Override
+    public List<Trazabilidad> buscarPorIdRestaurante(Long idRestaurante) {
+        DynamoDbIndex<TrazabilidadEntity> index = table.index("restaurante-index");
+
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(k -> k.partitionValue(idRestaurante));
 
         return index.query(queryConditional).stream()
                 .flatMap(page -> page.items().stream())
@@ -73,6 +86,7 @@ public class TrazabilidadDynamoAdapter implements ITrazabilidadPersistencePort {
                 .estadoNuevo(entity.getEstadoNuevo())
                 .idEmpleado(entity.getIdEmpleado())
                 .correoEmpleado(entity.getCorreoEmpleado())
+                .idRestaurante(entity.getIdRestaurante())
                 .build();
     }
 }

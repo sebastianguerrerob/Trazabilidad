@@ -4,6 +4,8 @@ import com.example.trazabilidad.application.dto.TrazabilidadRequestDto;
 import com.example.trazabilidad.application.dto.TrazabilidadResponseDto;
 import com.example.trazabilidad.application.mapper.ITrazabilidadMapper;
 import com.example.trazabilidad.domain.api.ITrazabilidadServicePort;
+import com.example.trazabilidad.domain.model.EficienciaPedido;
+import com.example.trazabilidad.domain.model.RankingEmpleado;
 import com.example.trazabilidad.domain.model.Trazabilidad;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,5 +34,15 @@ public class TrazabilidadController {
     public ResponseEntity<List<TrazabilidadResponseDto>> obtenerHistorial(@PathVariable Long idPedido) {
         List<Trazabilidad> historial = trazabilidadServicePort.obtenerHistorialPorPedido(idPedido);
         return ResponseEntity.ok(trazabilidadMapper.toResponseDtoList(historial));
+    }
+
+    @GetMapping("/eficiencia/restaurante/{idRestaurante}")
+    public ResponseEntity<List<EficienciaPedido>> obtenerEficiencia(@PathVariable Long idRestaurante) {
+        return ResponseEntity.ok(trazabilidadServicePort.obtenerEficienciaPorRestaurante(idRestaurante));
+    }
+
+    @GetMapping("/eficiencia/restaurante/{idRestaurante}/ranking")
+    public ResponseEntity<List<RankingEmpleado>> obtenerRanking(@PathVariable Long idRestaurante) {
+        return ResponseEntity.ok(trazabilidadServicePort.obtenerRankingEmpleados(idRestaurante));
     }
 }
