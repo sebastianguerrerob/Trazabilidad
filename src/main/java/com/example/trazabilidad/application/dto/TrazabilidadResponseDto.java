@@ -21,4 +21,5 @@ public class TrazabilidadResponseDto {
     private String estadoNuevo;
     private Long idEmpleado;
     private String correoEmpleado;
+    private Long idRestaurante;
 }

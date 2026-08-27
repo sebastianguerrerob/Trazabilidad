@@ -26,4 +26,7 @@ public class TrazabilidadRequestDto {
 
     private Long idEmpleado;
     private String correoEmpleado;
+
+    @NotNull(message = "El id del restaurante es obligatorio")
+    private Long idRestaurante;
 }
