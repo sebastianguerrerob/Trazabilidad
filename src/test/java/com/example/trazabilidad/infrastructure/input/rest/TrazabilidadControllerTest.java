@@ -4,6 +4,8 @@ import com.example.trazabilidad.application.dto.TrazabilidadRequestDto;
 import com.example.trazabilidad.application.dto.TrazabilidadResponseDto;
 import com.example.trazabilidad.application.mapper.ITrazabilidadMapper;
 import com.example.trazabilidad.domain.api.ITrazabilidadServicePort;
+import com.example.trazabilidad.domain.model.EficienciaPedido;
+import com.example.trazabilidad.domain.model.RankingEmpleado;
 import com.example.trazabilidad.domain.model.Trazabilidad;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -48,6 +50,7 @@ class TrazabilidadControllerTest {
         requestDto.setEstadoNuevo("EN_PREPARACION");
         requestDto.setIdEmpleado(4L);
         requestDto.setCorreoEmpleado("empleado@mail.com");
+        requestDto.setIdRestaurante(10L);
 
         Trazabilidad modelo = Trazabilidad.builder().idPedido(1L).build();
         when(trazabilidadMapper.toModel(any(TrazabilidadRequestDto.class))).thenReturn(modelo);
@@ -87,7 +90,7 @@ class TrazabilidadControllerTest {
 
         TrazabilidadResponseDto responseDto = new TrazabilidadResponseDto(
                 "uuid-1", 3L, 5L, "cliente@mail.com", fecha,
-                "PENDIENTE", "EN_PREPARACION", 4L, "empleado@mail.com");
+                "PENDIENTE", "EN_PREPARACION", 4L, "empleado@mail.com", 10L);
 
         when(trazabilidadServicePort.obtenerHistorialPorPedido(3L)).thenReturn(List.of(t1));
         when(trazabilidadMapper.toResponseDtoList(any())).thenReturn(List.of(responseDto));
@@ -112,5 +115,42 @@ class TrazabilidadControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void obtenerEficiencia_debeRetornar200ConLista() throws Exception {
+        EficienciaPedido eficiencia = new EficienciaPedido(3L, 45L, 4L, "pedro@mail.com");
+
+        when(trazabilidadServicePort.obtenerEficienciaPorRestaurante(10L))
+                .thenReturn(List.of(eficiencia));
+
+        mockMvc.perform(get("/trazabilidad/eficiencia/restaurante/10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idPedido").value(3))
+                .andExpect(jsonPath("$[0].tiempoMinutos").value(45))
+                .andExpect(jsonPath("$[0].idEmpleado").value(4))
+                .andExpect(jsonPath("$[0].correoEmpleado").value("pedro@mail.com"));
+
+        verify(trazabilidadServicePort).obtenerEficienciaPorRestaurante(10L);
+    }
+
+    @Test
+    void obtenerRanking_debeRetornar200ConListaOrdenada() throws Exception {
+        RankingEmpleado r1 = new RankingEmpleado(4L, "pedro@mail.com", 37.5, 2);
+        RankingEmpleado r2 = new RankingEmpleado(6L, "maria@mail.com", 50.0, 1);
+
+        when(trazabilidadServicePort.obtenerRankingEmpleados(10L))
+                .thenReturn(List.of(r1, r2));
+
+        mockMvc.perform(get("/trazabilidad/eficiencia/restaurante/10/ranking"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idEmpleado").value(4))
+                .andExpect(jsonPath("$[0].tiempoPromedioMinutos").value(37.5))
+                .andExpect(jsonPath("$[0].pedidosCompletados").value(2))
+                .andExpect(jsonPath("$[1].idEmpleado").value(6))
+                .andExpect(jsonPath("$[1].tiempoPromedioMinutos").value(50.0))
+                .andExpect(jsonPath("$[1].pedidosCompletados").value(1));
+
+        verify(trazabilidadServicePort).obtenerRankingEmpleados(10L);
     }
 }
